@@ -1,0 +1,66 @@
+#include <Wire.h>
+#include <LiquidCrystal_I2C.h>
+
+// I2C LCD at address 0x27, size 16x2
+LiquidCrystal_I2C lcd(0x27, 16, 2);
+
+#define LEDPIN 3
+#define LDRPIN A1
+#define POTPIN A2
+#define BUZZER 8
+
+void setup() {
+  lcd.init();
+  lcd.backlight();
+
+  pinMode(LEDPIN, OUTPUT);
+  pinMode(BUZZER, OUTPUT);
+
+  Serial.begin(9600);
+
+  lcd.setCursor(0, 0);
+  lcd.print("LightDetector:ON");
+  delay(2000);
+  lcd.clear();
+}
+
+void loop() {
+  int ldrValue = analogRead(LDRPIN);
+  int threshold = analogRead(POTPIN);
+  int brightness = map(ldrValue, 0, 1023, 255, 0);
+  analogWrite(LEDPIN, brightness);
+
+  lcd.setCursor(0, 0);
+  lcd.print("LDR: ");
+  lcd.print(ldrValue);
+  lcd.print("   ");
+
+  lcd.setCursor(0, 1);
+  lcd.print("THR: ");
+  lcd.print(threshold);
+  lcd.print("   ");
+
+  // Serial logging
+  Serial.print("LDR: ");
+  Serial.print(ldrValue);
+  Serial.print(" | THR: ");
+  Serial.println(threshold);
+
+  // Buzzer logic
+  if (ldrValue > threshold)
+  {
+   digitalWrite(BUZZER, HIGH);
+   
+   lcd.setCursor(8, 1);
+  lcd.print("BZ:ON ");
+  }
+
+  else
+   {
+    digitalWrite(BUZZER, LOW);
+    lcd.setCursor(8, 1);
+    lcd.print("BZ:OFF");
+   }
+
+  delay(500); // main loop delay
+}
